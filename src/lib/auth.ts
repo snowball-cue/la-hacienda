@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
@@ -109,25 +110,14 @@ export function formatEmployeeName(
 /**
  * Retrieves the currently authenticated user and their role.
  *
- * Returns null if:
- *   - No session exists (user is not logged in)
- *   - The session token is invalid or expired
- *   - The user has no entry in the `profiles` table
- *
- * In those cases, the calling page or action should redirect to /login
- * or return { success: false, error: 'Unauthorized' }.
- *
- * This function is async and MUST be called from a server context.
+ * Wrapped in React's cache() so that calling getAuthUser() multiple times
+ * during a single request (layout + page + server action) dedupes to
+ * a single Supabase getUser() call and a single Prisma profile fetch.
+ * This cuts round-trip latency from ~3× to 1× per page render.
  */
-export async function getAuthUser(): Promise<AuthUser | null> {
+export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient()
 
-  /*
-   * getUser() validates the session token with Supabase Auth servers.
-   * This is more secure than getSession() (which only reads the cookie).
-   * The tradeoff is one additional network round-trip per call — acceptable
-   * given that this is called once per page render or server action.
-   */
   const {
     data: { user },
     error: authError,
@@ -135,13 +125,6 @@ export async function getAuthUser(): Promise<AuthUser | null> {
 
   if (authError || !user) return null
 
-  /*
-   * Fetch the extended profile using Prisma (direct DB connection).
-   * We use Prisma here instead of the Supabase client so that this function
-   * works reliably regardless of whether RLS policies have been applied —
-   * we have already verified the user's identity above via getUser(), so
-   * reading their own profile server-side with Prisma is safe.
-   */
   const profile = await prisma.profile.findUnique({
     where: { id: user.id },
     select: { role: true, firstName: true, lastName: true, middleName: true, allowedModules: true },
@@ -159,7 +142,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
     fullName:       formatEmployeeName(profile.lastName, profile.firstName, profile.middleName),
     allowedModules: profile.allowedModules ?? [],
   }
-}
+})
 
 /**
  * Role hierarchy check — answers: "does this user meet the minimum requirement?"
