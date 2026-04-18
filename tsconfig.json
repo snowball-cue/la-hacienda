@@ -53,6 +53,7 @@
     ".next/types/**/*.ts" /* Next.js generated types */
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "mobile-app"
   ]
 }
