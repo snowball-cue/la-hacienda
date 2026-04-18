@@ -176,146 +176,216 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * DARK MODE OVERRIDES
+ * DARK MODE — "Mole Oscuro"
  *
- * Using .dark .classname selectors (specificity 0,2,0) which beats Tailwind's
- * single-class utilities (0,1,0). This is more reliable than CSS variable
- * remapping in Next.js production builds.
+ * Authentic Mexican-inspired dark palette. No grays anywhere.
+ * All text and surface colors are drawn from chocolate, cocoa, mole,
+ * cinnamon, and bone tones so the UI feels handcrafted even at night.
  *
- * Dark palette — warm charcoal inspired by Claude's dark mode:
- *   Page bg:      #16130e  (deepest warm black)
- *   Card/surface: #211d18  (dark warm brown)
- *   Border:       #36302a  (subtle warm border)
- *   Text primary: #f0ebe2  (warm near-white)
- *   Text normal:  #d0c8be  (warm light gray)
- *   Text muted:   #8c847a  (warm medium gray)
+ * ── Surfaces (deep cocoa → warm bark, progressively lighter) ─────────
+ *   Page bg:       #140c06   (deepest cocoa, near-black warmth)
+ *   Card/surface:  #241710   (rich mole)
+ *   Elevated:      #332113   (warm bark)
+ *   Hover fill:    #3e2a1a   (cinnamon-brown)
+ *   Border subtle: #3a2718   (cocoa edge)
+ *   Border strong: #5a3e26   (cinnamon edge)
+ *
+ * ── Text (warm cream → tan, ZERO gray) ───────────────────────────────
+ *   Strongest:  #fff3dc   (bone white)
+ *   Primary:    #f5e5c4   (masa cream)
+ *   Body:       #e8d2a8   (wheat)
+ *   Muted:      #d4b68a   (oat)   — still readable, never weak
+ *   Quiet:      #b9925e   (honey tan)  — for eyebrows / metadata only
+ *
+ * ── Accent pops on dark ──────────────────────────────────────────────
+ *   Terracotta becomes warmer and brighter so it holds against cocoa.
+ *   Saffron stays bright (gold glows beautifully on cocoa).
+ *   Moss lifts to a chlorophyll green.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Page & Surface Backgrounds ─────────────────────────────────────────── */
-.dark .bg-stone-50  { background-color: #16130e; }
-.dark .bg-stone-100 { background-color: #211d18; }
-.dark .bg-stone-200 { background-color: #2d2823; }
-.dark .bg-white     { background-color: #211d18; }
+.dark .bg-stone-50   { background-color: #140c06; }
+.dark .bg-stone-100  { background-color: #241710; }
+.dark .bg-stone-200  { background-color: #332113; }
+.dark .bg-white      { background-color: #241710; }
+.dark .bg-cream      { background-color: #241710; }
+
+/* Hero surfaces — replace sunlit masa glow with deep amber-on-mole gradient */
+.dark .bg-masa-glow  { background: radial-gradient(circle at 20% 0%, #4a2d14 0%, #241710 60%); }
+.dark .bg-adobe-glow { background: radial-gradient(circle at 80% 0%, #52321a 0%, #2d1c11 65%); }
+.dark .bg-adobe      { background-color: #3a2718; }
+.dark .bg-masa       { background-color: #332113; }
 
 /* ── Hover Background States ─────────────────────────────────────────────── */
-.dark .hover\:bg-stone-50:hover  { background-color: #2d2823; }
-.dark .hover\:bg-stone-100:hover { background-color: #36302a; }
-.dark .hover\:bg-white:hover     { background-color: #2d2823; }
+.dark .hover\:bg-stone-50:hover  { background-color: #332113; }
+.dark .hover\:bg-stone-100:hover { background-color: #3e2a1a; }
+.dark .hover\:bg-white:hover     { background-color: #332113; }
 
-/* ── Text Colors ─────────────────────────────────────────────────────────── */
-.dark .text-stone-950 { color: #faf6ef; }
-.dark .text-stone-900 { color: #f0ebe2; }
-.dark .text-stone-800 { color: #e4ddd4; }
-.dark .text-stone-700 { color: #d0c8be; }
-.dark .text-stone-600 { color: #b2a99e; }
-.dark .text-stone-500 { color: #8c847a; }
-.dark .text-stone-400 { color: #8c847a; }
+/* ── Text Colors — warm cream/tan only, NO GRAY ─────────────────────────── */
+.dark .text-stone-950 { color: #fff3dc; }
+.dark .text-stone-900 { color: #fff3dc; }
+.dark .text-stone-800 { color: #f5e5c4; }
+.dark .text-stone-700 { color: #e8d2a8; }
+.dark .text-stone-600 { color: #dcc08a; }
+.dark .text-stone-500 { color: #d4b68a; }
+.dark .text-stone-400 { color: #c19e6a; }
+.dark .text-stone-300 { color: #a88860; }
+
+/* Also upgrade the eyebrow — was a grey before, now honey tan */
+.dark .eyebrow        { color: #c9a77a; }
 
 /* ── Border Colors ───────────────────────────────────────────────────────── */
-.dark .border-stone-100 { border-color: #2d2823; }
-.dark .border-stone-200 { border-color: #36302a; }
-.dark .border-stone-300 { border-color: #4a433b; }
+.dark .border-stone-100 { border-color: #2c1d11; }
+.dark .border-stone-200 { border-color: #3a2718; }
+.dark .border-stone-300 { border-color: #5a3e26; }
+.dark .border-b,
+.dark .border-t         { border-color: #3a2718; }
 
 /* ── Divide (table row separators) ──────────────────────────────────────── */
-.dark .divide-stone-100 > * + * { border-color: #2d2823; }
-.dark .divide-stone-200 > * + * { border-color: #36302a; }
+.dark .divide-stone-100 > * + * { border-color: #2c1d11; }
+.dark .divide-stone-200 > * + * { border-color: #3a2718; }
 
 /* ── Component Classes ───────────────────────────────────────────────────── */
 .dark .card {
-  background-color: #211d18;
-  border-color: #36302a;
-  box-shadow: none;
+  background-color: #241710;
+  border-color: #3a2718;
+  box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 1px 8px rgba(0,0,0,.25);
+}
+.dark .card-interactive:hover {
+  background-color: #2e1d12;
+  border-color: #5a3e26;
+  box-shadow: 0 2px 6px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35);
+}
+.dark .card-hero {
+  background: radial-gradient(circle at 20% 0%, #4a2d14 0%, #241710 60%);
+  border-color: #5a3e26;
 }
 
 .dark .btn-secondary {
-  background-color: #2d2823;
-  border-color: #4a433b;
-  color: #d0c8be;
+  background-color: #332113;
+  border-color: #5a3e26;
+  color: #f5e5c4;
 }
-.dark .btn-secondary:hover { background-color: #36302a; }
+.dark .btn-secondary:hover {
+  background-color: #3e2a1a;
+  border-color: #6d4c2f;
+}
+
+.dark .btn-ghost         { color: #dcc08a; }
+.dark .btn-ghost:hover   { background-color: #332113; color: #fff3dc; }
 
 .dark .input,
+.dark .input-lg,
 .dark input:not([type="checkbox"]):not([type="radio"]),
 .dark select,
 .dark textarea {
-  background-color: #2d2823;
-  border-color: #4a433b;
-  color: #f0ebe2;
+  background-color: #2c1d11;
+  border-color: #5a3e26;
+  color: #fff3dc;
 }
 .dark .input::placeholder,
-.dark input::placeholder { color: #665e56; }
+.dark .input-lg::placeholder,
+.dark input::placeholder { color: #8c6d45; }
 
-.dark .page-title   { color: #f0ebe2; }
-.dark .section-title { color: #e4ddd4; }
+.dark .page-title    { color: #fff3dc; }
+.dark .page-subtitle { color: #d4b68a; }
+.dark .section-title { color: #f5e5c4; }
+.dark .stat-number   { color: #fff3dc; }
 
-/* ── Badges in dark — soften the bright backgrounds ─────────────────────── */
-.dark .badge-high    { background-color: rgba(153,27,27,.3);  color: #fca5a5; }
-.dark .badge-medium  { background-color: rgba(146,64,14,.3);  color: #fcd34d; }
-.dark .badge-low     { background-color: rgba(20,83,45,.3);   color: #86efac; }
-.dark .badge-info    { background-color: rgba(30,58,138,.3);  color: #93c5fd; }
-.dark .badge-success { background-color: rgba(6,78,59,.3);    color: #6ee7b7; }
-.dark .badge-warning { background-color: rgba(154,52,18,.3);  color: #fdba74; }
-.dark .badge-neutral { background-color: rgba(87,83,78,.2);   color: #8c847a; }
+.dark .link-brand { color: #ec9a6d; }
+.dark .link-brand:hover { color: #f4c2a3; }
+
+/* ── Badges on dark — warmer tints, readable text ──────────────────────── */
+.dark .badge-high    { background-color: rgba(193,30,30,.22);  color: #fecaca; --tw-ring-color: rgba(193,30,30,.35); }
+.dark .badge-medium  { background-color: rgba(180,83,9,.22);   color: #fde68a; --tw-ring-color: rgba(180,83,9,.35); }
+.dark .badge-low     { background-color: rgba(45,90,39,.28);   color: #b0cda6; --tw-ring-color: rgba(45,90,39,.45); }
+.dark .badge-info    { background-color: rgba(30,58,138,.25);  color: #bfdbfe; --tw-ring-color: rgba(30,58,138,.4); }
+.dark .badge-success { background-color: rgba(45,90,39,.28);   color: #b0cda6; --tw-ring-color: rgba(45,90,39,.45); }
+.dark .badge-warning { background-color: rgba(194,65,12,.25);  color: #fed7aa; --tw-ring-color: rgba(194,65,12,.4); }
+.dark .badge-neutral { background-color: rgba(90,62,38,.35);   color: #f5e5c4; --tw-ring-color: rgba(90,62,38,.5); }
+.dark .badge-brand   { background-color: rgba(193,68,14,.25);  color: #f4c2a3; --tw-ring-color: rgba(193,68,14,.4); }
 
 /* ── Table header / panel backgrounds ───────────────────────────────────── */
-.dark .bg-stone-50\/50 { background-color: rgba(22,19,14,.5); }
+.dark .bg-stone-50\/50   { background-color: rgba(20,12,6,.6); }
+.dark .bg-stone-100\/80  { background-color: rgba(36,23,16,.85); }
 
 /* ── Ring offset on dark surfaces (focus rings) ──────────────────────────── */
-.dark *:focus-visible { --tw-ring-offset-color: #211d18; }
+.dark *:focus-visible { --tw-ring-offset-color: #241710; }
 
-/* ── Blue tones (privacy notices, info banners) ──────────────────────────── */
-.dark .bg-blue-50    { background-color: rgba(30,58,138,.12); }
-.dark .bg-blue-100   { background-color: rgba(30,58,138,.25); }
-.dark .border-blue-100 { border-color: rgba(30,58,138,.3); }
-.dark .border-blue-200 { border-color: rgba(30,58,138,.4); }
-.dark .text-blue-800 { color: #93c5fd; }
+/* ── Accent semantic tones — warmer, higher contrast ──────────────────── */
+/* Amber / saffron */
+.dark .bg-amber-50       { background-color: rgba(180,132,16,.18); }
+.dark .bg-amber-100      { background-color: rgba(180,132,16,.28); }
+.dark .border-amber-200  { border-color: rgba(180,132,16,.45); }
+.dark .text-amber-600    { color: #f0c040; }
+.dark .text-amber-700    { color: #eec94c; }
+.dark .text-amber-800    { color: #fde68a; }
+.dark .ring-amber-200    { --tw-ring-color: rgba(180,132,16,.45); }
 
-/* ── Sky tones ───────────────────────────────────────────────────────────── */
-.dark .bg-sky-50    { background-color: rgba(14,165,233,.1); }
-.dark .bg-sky-100   { background-color: rgba(14,165,233,.18); }
-.dark .border-sky-200 { border-color: rgba(14,165,233,.35); }
-.dark .text-sky-700 { color: #38bdf8; }
+/* Red */
+.dark .bg-red-50         { background-color: rgba(193,30,30,.15); }
+.dark .bg-red-100        { background-color: rgba(193,30,30,.25); }
+.dark .border-red-200    { border-color: rgba(193,30,30,.4); }
+.dark .text-red-500      { color: #fca5a5; }
+.dark .text-red-600      { color: #fb9e99; }
+.dark .text-red-700      { color: #fecaca; }
+.dark .text-red-800      { color: #fecaca; }
+.dark .ring-red-200      { --tw-ring-color: rgba(193,30,30,.4); }
 
-/* ── Green tones ─────────────────────────────────────────────────────────── */
-.dark .bg-green-100  { background-color: rgba(22,163,74,.2); }
-.dark .text-green-800 { color: #86efac; }
+/* Moss / emerald / green */
+.dark .bg-moss-50        { background-color: rgba(45,90,39,.22); }
+.dark .bg-moss-100       { background-color: rgba(45,90,39,.32); }
+.dark .border-moss-200   { border-color: rgba(45,90,39,.5); }
+.dark .text-moss         { color: #7eaa71; }
+.dark .text-moss-600     { color: #b0cda6; }
+.dark .bg-emerald-100    { background-color: rgba(4,120,87,.25); }
+.dark .text-emerald-700  { color: #6ee7b7; }
+.dark .text-emerald-800  { color: #a7f3d0; }
+.dark .bg-green-100      { background-color: rgba(22,163,74,.22); }
+.dark .text-green-800    { color: #bbf7d0; }
+.dark .ring-moss-200     { --tw-ring-color: rgba(45,90,39,.5); }
+.dark .ring-emerald-200  { --tw-ring-color: rgba(4,120,87,.4); }
 
-/* ── Stone-50/80 opacity sub-surfaces (used inside cards) ───────────────── */
-.dark .bg-stone-50\/50 { background-color: rgba(22,19,14,.5); }
-.dark .bg-stone-100\/80 { background-color: rgba(33,29,24,.8); }
+/* Orange */
+.dark .bg-orange-50      { background-color: rgba(194,65,12,.18); }
+.dark .text-orange-700   { color: #fed7aa; }
+.dark .ring-orange-200   { --tw-ring-color: rgba(194,65,12,.4); }
 
-/* ── Amber / red / emerald status colors — keep readable on dark bg ──────── */
-.dark .text-amber-700  { color: #fcd34d; }
-.dark .text-red-600    { color: #f87171; }
-.dark .text-red-500    { color: #fca5a5; }
-.dark .text-emerald-700 { color: #34d399; }
-.dark .text-blue-700   { color: #93c5fd; }
+/* Blue / sky */
+.dark .bg-blue-50        { background-color: rgba(30,58,138,.15); }
+.dark .bg-blue-100       { background-color: rgba(30,58,138,.28); }
+.dark .border-blue-100   { border-color: rgba(30,58,138,.3); }
+.dark .border-blue-200   { border-color: rgba(30,58,138,.42); }
+.dark .text-blue-700     { color: #93c5fd; }
+.dark .text-blue-800     { color: #bfdbfe; }
+.dark .ring-blue-200     { --tw-ring-color: rgba(30,58,138,.4); }
+.dark .bg-sky-50         { background-color: rgba(14,165,233,.12); }
+.dark .bg-sky-100        { background-color: rgba(14,165,233,.2); }
+.dark .border-sky-200    { border-color: rgba(14,165,233,.35); }
+.dark .text-sky-700      { color: #7dd3fc; }
 
-.dark .bg-amber-50  { background-color: rgba(146,64,14,.15); }
-.dark .border-amber-200 { border-color: rgba(146,64,14,.4); }
-.dark .text-amber-800 { color: #fcd34d; }
-.dark .text-amber-600 { color: #fbbf24; }
+/* Terracotta surface on dark */
+.dark .bg-terracotta-50  { background-color: rgba(193,68,14,.18); }
+.dark .bg-terracotta-100 { background-color: rgba(193,68,14,.28); }
+.dark .text-terracotta   { color: #ec9a6d; }
+.dark .text-terracotta-600 { color: #f4c2a3; }
+.dark .text-terracotta-dark { color: #ec9a6d; }
+.dark .border-terracotta-200 { border-color: rgba(193,68,14,.4); }
+.dark .ring-terracotta-200 { --tw-ring-color: rgba(193,68,14,.4); }
 
-.dark .bg-red-50    { background-color: rgba(153,27,27,.15); }
-.dark .border-red-200 { border-color: rgba(153,27,27,.4); }
-.dark .text-red-800  { color: #fca5a5; }
-.dark .text-red-600  { color: #f87171; }
+/* Saffron surface on dark */
+.dark .bg-saffron-50     { background-color: rgba(212,160,23,.18); }
+.dark .bg-saffron-100    { background-color: rgba(212,160,23,.3); }
+.dark .border-saffron-200 { border-color: rgba(212,160,23,.4); }
 
-.dark .bg-emerald-100 { background-color: rgba(6,78,59,.25); }
-.dark .text-emerald-800 { color: #6ee7b7; }
+/* ── Shadows on dark — deeper, more diffuse ───────────────────────────── */
+.dark .shadow-sm   { box-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.dark .shadow      { box-shadow: 0 1px 3px rgba(0,0,0,.55), 0 1px 2px -1px rgba(0,0,0,.5); }
+.dark .shadow-soft { box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 1px 8px rgba(0,0,0,.3); }
+.dark .shadow-lift { box-shadow: 0 2px 6px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.4); }
+.dark .shadow-float { box-shadow: 0 4px 14px rgba(0,0,0,.55), 0 20px 50px rgba(0,0,0,.45); }
 
-.dark .bg-blue-100  { background-color: rgba(30,58,138,.25); }
-.dark .text-blue-800 { color: #93c5fd; }
-.dark .text-blue-700 { color: #60a5fa; }
-
-/* ── Misc ────────────────────────────────────────────────────────────────── */
-.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,.4); }
-.dark .shadow    { box-shadow: 0 1px 3px 0 rgba(0,0,0,.5), 0 1px 2px -1px rgba(0,0,0,.5); }
-
-/* ── Store filter top bar ────────────────────────────────────────────────── */
-.dark .border-b { border-color: #36302a; }
-
-/* ── Sidebar nav links — dark hover states ───────────────────────────────── */
-.dark nav a:not(.bg-terracotta):hover { background-color: rgba(255,255,255,0.05); }
-.dark nav a:not(.bg-terracotta)       { color: #b2a99e; }
-.dark nav a:not(.bg-terracotta):hover { color: #f0ebe2; }
+/* ── Sidebar nav links — warm hover, cream text ───────────────────────── */
+.dark nav a:not(.bg-terracotta):hover { background-color: rgba(212,160,23,0.08); }
+.dark nav a:not(.bg-terracotta)       { color: #e8d2a8; }
+.dark nav a:not(.bg-terracotta):hover { color: #fff3dc; }
