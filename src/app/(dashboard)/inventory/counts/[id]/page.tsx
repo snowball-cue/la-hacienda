@@ -21,7 +21,7 @@ export default async function CountSheetPage({
 
   if (!result.success) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <p className="text-red-600">{result.error}</p>
         <Link href="/dashboard/inventory/counts" className="text-sm text-terracotta hover:underline mt-2 block">
           ← Back to counts
@@ -33,7 +33,7 @@ export default async function CountSheetPage({
   const { count, items } = result.data
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl space-y-6">
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

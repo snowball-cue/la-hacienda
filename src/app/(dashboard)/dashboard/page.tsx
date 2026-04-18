@@ -41,16 +41,16 @@ function Metric({
   }[tone]
 
   const content = (
-    <div className={`card p-5 md:p-6 ring-1 ring-inset ${toneMap.ring} ${href ? 'card-interactive' : ''}`}>
-      <div className="flex items-start justify-between mb-3">
+    <div className={`card p-4 sm:p-5 md:p-6 ring-1 ring-inset ${toneMap.ring} ${href ? 'card-interactive' : ''}`}>
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
         <p className="eyebrow">{eyebrow}</p>
         {icon && (
-          <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${toneMap.iconBg}`}>
+          <span className={`hidden sm:flex h-9 w-9 items-center justify-center rounded-xl ${toneMap.iconBg}`}>
             {icon}
           </span>
         )}
       </div>
-      <p className={`stat-number ${toneMap.num}`}>{value}</p>
+      <p className={`stat-number ${toneMap.num} text-3xl sm:text-4xl md:text-5xl`}>{value}</p>
       {note && <p className="text-xs text-stone-500 mt-1.5">{note}</p>}
     </div>
   )
@@ -112,10 +112,10 @@ export default async function DashboardHomePage() {
   const needsAttention = lowStockCount + soonToExpire
 
   return (
-    <div className="p-6 lg:p-10 space-y-10 max-w-7xl animate-fade-in">
+    <div className="p-4 sm:p-6 lg:p-10 space-y-8 lg:space-y-10 max-w-7xl mx-auto w-full animate-fade-in">
 
       {/* ── Hero greeting ─────────────────────────────────────────────── */}
-      <section className="card-hero p-8 md:p-10 relative overflow-hidden">
+      <section className="card-hero p-6 md:p-10 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
           <p className="eyebrow mb-2">{greeting.es}</p>
           <h1 className="page-title">

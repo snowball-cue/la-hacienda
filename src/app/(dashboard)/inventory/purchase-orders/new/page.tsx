@@ -18,7 +18,7 @@ export default async function NewPurchaseOrderPage() {
   ])
 
   return (
-    <div className="p-6 lg:p-8 max-w-lg">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-lg">
       <div className="mb-6">
         <Link href="/dashboard/inventory/purchase-orders" className="text-xs text-stone-400 hover:text-terracotta mb-1 inline-block">
           ← Purchase Orders

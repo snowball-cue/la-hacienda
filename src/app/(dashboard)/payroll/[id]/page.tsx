@@ -33,7 +33,7 @@ export default async function PayrollDetailPage({
     new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">

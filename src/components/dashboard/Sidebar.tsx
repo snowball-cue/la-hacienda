@@ -321,7 +321,7 @@ export default function Sidebar({ user }: SidebarProps) {
       </aside>
 
       {/* ── Mobile: top bar + drawer ──────────────────────────────────── */}
-      <div className="lg:hidden">
+      <div className="lg:hidden w-full sticky top-0 z-20">
         {/* Mobile top bar */}
         <div className="flex items-center justify-between h-14 px-4 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-white/10">
           <div className="flex items-center gap-2">

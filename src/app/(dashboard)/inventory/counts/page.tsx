@@ -20,7 +20,7 @@ export default async function InventoryCountsPage() {
   const counts = result.success ? result.data : []
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl space-y-6">
 
       <div className="flex items-center justify-between gap-4">
         <div>

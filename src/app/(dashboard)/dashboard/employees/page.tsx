@@ -70,7 +70,7 @@ export default async function EmployeesPage({
   const sp = { show: params.show, sort: params.sort, dir: params.dir }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">

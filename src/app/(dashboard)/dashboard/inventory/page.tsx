@@ -64,7 +64,7 @@ export default async function InventoryPage({
   }
 
   return (
-    <div className="p-6 lg:p-10 space-y-7 max-w-7xl animate-fade-in">
+    <div className="p-4 sm:p-6 lg:p-10 space-y-6 lg:space-y-7 max-w-7xl mx-auto w-full animate-fade-in">
 
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4">

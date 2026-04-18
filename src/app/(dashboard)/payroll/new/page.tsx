@@ -22,7 +22,7 @@ export default async function NewPayrollPeriodPage() {
   const defaultEnd   = sunday.toISOString().slice(0, 10)
 
   return (
-    <div className="p-6 lg:p-8 max-w-lg">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-lg">
       <div className="mb-6">
         <h1 className="page-title">New Pay Period</h1>
         <p className="text-sm text-stone-500 mt-1">Create a weekly or bi-weekly period to track and export hours.</p>

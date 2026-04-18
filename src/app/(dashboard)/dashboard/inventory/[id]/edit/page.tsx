@@ -25,7 +25,7 @@ export default async function EditProductPage({
   if (!result.success) notFound()
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
       <div className="mb-6">
         <h1 className="page-title">Edit Product</h1>
         <p className="text-sm text-stone-500 mt-1">

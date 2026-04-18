@@ -12,7 +12,7 @@ export default async function ImportPage() {
   if (!hasMinimumRole(user.role, 'manager')) redirect('/dashboard/inventory')
 
   return (
-    <div className="p-6 lg:p-8 max-w-3xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl">
       <div className="mb-6">
         <div className="flex items-center gap-2 text-xs text-stone-400 mb-2">
           <Link href="/dashboard/inventory" className="hover:text-stone-600">Inventory</Link>

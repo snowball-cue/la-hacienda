@@ -16,7 +16,7 @@ export default async function SuppliersPage() {
   const suppliers = result.success ? result.data : []
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <div className="mb-6">
         <h1 className="page-title">Suppliers</h1>
         <p className="text-sm text-stone-500 mt-1">

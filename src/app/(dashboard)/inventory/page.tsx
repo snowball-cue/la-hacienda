@@ -69,7 +69,7 @@ export default async function InventoryPage({
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-7xl">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
 
       {/* ── Header ────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3">

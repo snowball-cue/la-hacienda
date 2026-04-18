@@ -58,7 +58,7 @@ export default async function TimekeepingPage({
   )
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl">
 
       <div>
         <h1 className="page-title">Timekeeping</h1>
