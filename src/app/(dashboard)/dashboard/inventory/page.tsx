@@ -64,28 +64,41 @@ export default async function InventoryPage({
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-7xl">
+    <div className="p-6 lg:p-10 space-y-7 max-w-7xl animate-fade-in">
 
       {/* ── Header ────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
+          <p className="eyebrow mb-1">Inventario</p>
           <h1 className="page-title">Inventory</h1>
-          <p className="text-sm text-stone-500 mt-1">
-            {activeCount} active · {archivedCount} archived
+          <p className="text-sm text-stone-500 mt-1.5">
+            <span className="font-medium text-stone-700">{activeCount}</span> active
+            <span className="text-stone-300 mx-1.5">·</span>
+            <span>{archivedCount} archived</span>
             {lowCount > 0 && (
-              <span className="ml-2 text-red-600 font-medium">
-                · {lowCount} low stock
-              </span>
+              <>
+                <span className="text-stone-300 mx-1.5">·</span>
+                <span className="inline-flex items-center gap-1 text-red-600 font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                  {lowCount} low stock
+                </span>
+              </>
             )}
           </p>
         </div>
         {canEdit && (
           <div className="flex flex-wrap gap-2">
-            <Link href="/dashboard/inventory/import" className="btn-secondary text-sm">
+            <Link href="/dashboard/inventory/import" className="btn-secondary">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
               Import CSV
             </Link>
-            <Link href="/dashboard/inventory/new" className="btn-primary text-sm">
-              + Add Product
+            <Link href="/dashboard/inventory/new" className="btn-primary">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Product
             </Link>
           </div>
         )}
@@ -132,11 +145,17 @@ export default async function InventoryPage({
       {/* ── Quick action strip ────────────────────────────────────────── */}
       {show !== 'archived' && (
         <div className="flex flex-wrap gap-2">
-          <Link href="/dashboard/inventory/receive" className="btn-primary text-sm">
-            📦 Receive Goods
+          <Link href="/dashboard/inventory/receive" className="btn-primary">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7l9-4 9 4M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8m-9 4v6m0 0l-3-3m3 3l3-3" />
+            </svg>
+            Receive Goods
           </Link>
-          <Link href="/dashboard/inventory/adjust" className="btn-secondary text-sm">
-            ✏️ Adjust Stock
+          <Link href="/dashboard/inventory/adjust" className="btn-secondary">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Adjust Stock
           </Link>
         </div>
       )}
@@ -174,16 +193,28 @@ export default async function InventoryPage({
       {/* ── Product table ─────────────────────────────────────────────── */}
       {products.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="text-5xl mb-4">📦</div>
-          <p className="text-stone-500 text-sm">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-adobe flex items-center justify-center mb-4">
+            <svg className="h-7 w-7 text-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <p className="text-stone-700 font-semibold">
             {params.search || params.category || params.filter
-              ? 'No products match your filters.'
+              ? 'No products match your filters'
               : show === 'archived'
-                ? 'No archived products.'
-                : 'No products yet.'}
+                ? 'No archived products'
+                : 'No products yet'}
+          </p>
+          <p className="text-xs text-stone-500 mt-1">
+            {params.search || params.category || params.filter
+              ? 'Try adjusting or clearing your filters.'
+              : 'Add your first product to get started.'}
           </p>
           {canEdit && !params.search && !params.category && !params.filter && show === 'active' && (
-            <Link href="/dashboard/inventory/new" className="btn-primary text-sm mt-4 inline-block">
+            <Link href="/dashboard/inventory/new" className="btn-primary mt-5 inline-flex">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
               Add First Product
             </Link>
           )}

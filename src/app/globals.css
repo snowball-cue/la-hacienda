@@ -33,6 +33,12 @@
 @layer base {
   html { scroll-behavior: smooth; }
 
+  body {
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   *:focus-visible {
     @apply outline-none ring-2 ring-offset-2 ring-terracotta;
   }
@@ -40,7 +46,7 @@
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
-    @apply rounded-md border-stone-300 shadow-sm bg-white text-stone-900
+    @apply rounded-lg border-stone-200 shadow-sm bg-white text-stone-900
            focus:border-terracotta focus:ring-terracotta;
   }
 }
@@ -48,59 +54,124 @@
 /* ── Component Layer ─────────────────────────────────────────────────────────*/
 @layer components {
 
+  /* ── Buttons ──────────────────────────────────────────────────────────── */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
-           px-4 py-2 rounded-md
-           bg-terracotta text-white font-medium text-sm
-           hover:bg-terracotta-light transition-colors duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed
+           px-5 py-2.5 rounded-lg
+           bg-terracotta text-white font-semibold text-sm
+           shadow-soft hover:shadow-lift hover:bg-terracotta-light
+           active:bg-terracotta-dark active:translate-y-px
+           transition-all duration-200 ease-swift
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
            focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-terracotta;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2
-           px-4 py-2 rounded-md
-           border border-stone-300 bg-white text-stone-700 font-medium text-sm
-           hover:bg-stone-50 transition-colors duration-150
+           px-5 py-2.5 rounded-lg
+           border border-stone-200 bg-white text-stone-700 font-semibold text-sm
+           shadow-soft hover:bg-stone-50 hover:border-stone-300
+           active:translate-y-px
+           transition-all duration-200 ease-swift
            disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2 rounded-lg
+           text-stone-600 font-medium text-sm
+           hover:bg-stone-100 hover:text-stone-900
+           transition-all duration-150;
   }
 
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2
-           px-4 py-2 rounded-md
-           bg-red-600 text-white font-medium text-sm
-           hover:bg-red-700 transition-colors duration-150
+           px-5 py-2.5 rounded-lg
+           bg-red-600 text-white font-semibold text-sm
+           shadow-soft hover:bg-red-700
+           transition-all duration-200
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* ── Badges ───────────────────────────────────────────────────────────── */
   .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold tracking-wide;
   }
-  .badge-high    { @apply bg-red-100    text-red-800; }
-  .badge-medium  { @apply bg-amber-100  text-amber-800; }
-  .badge-low     { @apply bg-green-100  text-green-800; }
-  .badge-info    { @apply bg-blue-100   text-blue-800; }
-  .badge-success { @apply bg-emerald-100 text-emerald-800; }
-  .badge-warning { @apply bg-orange-100 text-orange-800; }
-  .badge-neutral { @apply bg-stone-100  text-stone-700; }
+  .badge-high    { @apply bg-red-50     text-red-700    ring-1 ring-inset ring-red-200; }
+  .badge-medium  { @apply bg-amber-50   text-amber-700  ring-1 ring-inset ring-amber-200; }
+  .badge-low     { @apply bg-moss-50    text-moss-600   ring-1 ring-inset ring-moss-200; }
+  .badge-info    { @apply bg-blue-50    text-blue-700   ring-1 ring-inset ring-blue-200; }
+  .badge-success { @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200; }
+  .badge-warning { @apply bg-orange-50  text-orange-700 ring-1 ring-inset ring-orange-200; }
+  .badge-neutral { @apply bg-stone-100  text-stone-700  ring-1 ring-inset ring-stone-200; }
+  .badge-brand   { @apply bg-terracotta-50 text-terracotta-600 ring-1 ring-inset ring-terracotta-200; }
 
+  /* ── Cards ────────────────────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-xl border border-stone-200 shadow-sm;
+    @apply bg-white rounded-2xl border border-stone-200/60 shadow-soft;
   }
 
+  .card-interactive {
+    @apply bg-white rounded-2xl border border-stone-200/60 shadow-soft
+           hover:shadow-lift hover:border-stone-300/60
+           transition-all duration-200 ease-swift cursor-pointer;
+  }
+
+  .card-hero {
+    @apply rounded-3xl border border-adobe bg-masa-glow shadow-soft;
+  }
+
+  /* ── Typography ───────────────────────────────────────────────────────── */
   .page-title {
-    @apply text-2xl font-bold text-stone-900 tracking-tight;
+    @apply text-3xl md:text-4xl font-display font-semibold text-stone-900 tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-stone-500 mt-1;
   }
 
   .section-title {
-    @apply text-lg font-semibold text-stone-800;
+    @apply text-lg font-semibold text-stone-900 tracking-tight;
   }
 
+  .stat-number {
+    @apply text-4xl md:text-5xl font-display font-semibold tracking-tight tabular-nums;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-stone-500;
+  }
+
+  /* ── Inputs ───────────────────────────────────────────────────────────── */
   .input {
-    @apply block w-full rounded-md border border-stone-300 bg-white text-stone-900
-           px-3 py-2 text-sm shadow-sm placeholder:text-stone-400
-           focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta
-           disabled:cursor-not-allowed disabled:opacity-60;
+    @apply block w-full rounded-lg border border-stone-200 bg-white text-stone-900
+           px-3.5 py-2.5 text-sm shadow-sm placeholder:text-stone-400
+           focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/20
+           disabled:cursor-not-allowed disabled:opacity-60
+           transition-colors duration-150;
+  }
+
+  .input-lg {
+    @apply block w-full rounded-xl border border-stone-200 bg-white text-stone-900
+           px-4 py-3 text-base shadow-sm placeholder:text-stone-400
+           focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/20
+           disabled:cursor-not-allowed disabled:opacity-60
+           transition-colors duration-150;
+  }
+
+  /* ── Link styles ──────────────────────────────────────────────────────── */
+  .link-brand {
+    @apply text-terracotta font-semibold hover:text-terracotta-dark underline-offset-2 hover:underline transition-colors;
+  }
+
+  /* ── Decorative papel picado divider (subtle) ────────────────────────── */
+  .divider-papel {
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1.5px);
+    background-size: 8px 2px;
+    background-repeat: repeat-x;
+    background-position: center;
+    height: 2px;
+    @apply text-terracotta/30 w-full;
   }
 }
 

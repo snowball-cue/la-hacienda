@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Fraunces } from 'next/font/google'
 import './globals.css'
 
 /**
@@ -45,6 +45,16 @@ const inter = Inter({
   variable: '--font-inter', // Injects as CSS custom property on <html>
 })
 
+// Fraunces — warm, slightly-quirky display serif used for hero headings,
+// large numbers on dashboard cards, and marketing-style surfaces.
+// Matches the artisanal feel of a Mexican grocery while staying refined.
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fraunces',
+  axes:    ['SOFT', 'opsz'],
+})
+
 /**
  * Site-wide metadata — used by Next.js to populate <head> tags.
  *
@@ -84,7 +94,7 @@ export default function RootLayout({
      * className={inter.variable} — sets the --font-inter CSS variable so
      *   tailwind's `font-sans` class resolves to Inter.
      */
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <body
         className="min-h-screen bg-stone-50 text-stone-900 antialiased"
         /*
