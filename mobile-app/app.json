@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "La Hacienda",
+    "slug": "la-hacienda-inventory",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF7F2"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lahacienda.inventory",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Used to quickly log in to La Hacienda.",
+        "NSCameraUsageDescription": "Required for barcode scanning."
+      }
+    },
+    "android": {
+      "package": "com.lahacienda.inventory",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#C1652D"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        { "cameraPermission": "Required for barcode scanning." }
+      ],
+      ["expo-local-authentication", {}]
+    ],
+    "scheme": "lahacienda"
+  }
+}

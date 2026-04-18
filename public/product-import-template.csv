@@ -1,0 +1,21 @@
+sku,name,name_es,category,unit,cost_price,sell_price,reorder_point,reorder_qty,supplier
+LH-001,Corn Tortillas (30 ct),Tortillas de Maíz (30 pz),Bakery & Tortillas,each,1.50,2.99,20,50,El Milagro
+LH-002,Flour Tortillas (20 ct),Tortillas de Harina (20 pz),Bakery & Tortillas,each,1.75,3.49,15,40,El Milagro
+LH-003,Dried Ancho Chiles (4 oz),Chiles Anchos Secos (4 oz),Spices & Seasonings,each,2.00,3.99,10,24,
+LH-004,Dried Pasilla Chiles (4 oz),Chiles Pasilla Secos (4 oz),Spices & Seasonings,each,2.00,3.99,10,24,
+LH-005,Masa Harina (4.4 lb),Masa Harina (4.4 lb),Dry Goods & Grains,each,3.50,5.99,8,20,MASECA
+LH-006,Black Beans (2 lb),Frijoles Negros (2 lb),Dry Goods & Grains,each,1.25,2.49,12,30,
+LH-007,Pinto Beans (2 lb),Frijoles Pintos (2 lb),Dry Goods & Grains,each,1.25,2.49,12,30,
+LH-008,White Rice (5 lb),Arroz Blanco (5 lb),Dry Goods & Grains,each,2.75,4.99,8,20,
+LH-009,Tomatillos (1 lb),Tomates Verdes (1 lb),Produce,lb,0.89,1.49,5,15,Local Farm
+LH-010,Jalapeños (1 lb),Jalapeños (1 lb),Produce,lb,0.75,1.29,5,15,Local Farm
+LH-011,Avocados (each),Aguacates (c/u),Produce,each,0.65,1.29,10,24,Local Farm
+LH-012,Cilantro (bunch),Cilantro (manojo),Produce,each,0.50,0.99,8,20,Local Farm
+LH-013,Cotija Cheese (10 oz),Queso Cotija (10 oz),Dairy & Refrigerated,each,3.25,5.49,6,12,La Villita
+LH-014,Mexican Crema (16 oz),Crema Mexicana (16 oz),Dairy & Refrigerated,each,2.75,4.49,6,12,La Villita
+LH-015,Chihuahua Cheese (10 oz),Queso Chihuahua (10 oz),Dairy & Refrigerated,each,3.50,5.99,6,12,La Villita
+LH-016,Red Salsa (16 oz jar),Salsa Roja (frasco 16 oz),Sauces & Condiments,each,1.50,2.99,10,24,
+LH-017,Green Salsa (16 oz jar),Salsa Verde (frasco 16 oz),Sauces & Condiments,each,1.50,2.99,10,24,
+LH-018,Mole Paste (8.25 oz),Pasta de Mole (8.25 oz),Sauces & Condiments,each,3.75,6.49,5,12,Doña Maria
+LH-019,Tajín Seasoning (5 oz),Tajín (5 oz),Spices & Seasonings,each,2.50,4.29,8,20,Tajín
+LH-020,Cumin (2 oz),Comino (2 oz),Spices & Seasonings,each,1.00,1.99,10,24,

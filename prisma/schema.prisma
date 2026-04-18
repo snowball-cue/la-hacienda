@@ -1,0 +1,835 @@
+// =============================================================================
+// La Hacienda — Prisma Schema
+// =============================================================================
+//
+// This file is the SINGLE SOURCE OF TRUTH for the database schema.
+// It lives in version control so the full history of schema changes is tracked.
+//
+// ── KEY RULES (enforced by CLAUDE.md) ────────────────────────────────────────
+//
+//  ✗ NEVER hand-edit migration files in prisma/migrations/
+//  ✓ Always create schema changes via:
+//      npx prisma migrate dev --name <descriptive_name>
+//
+//  ✗ NEVER run `prisma db push' in production — it bypasses the migration
+//    history and can cause data loss.
+//  ✓ In production, always use:
+//      npx prisma migrate deploy
+//
+//  ✗ NEVER hard-delete a Product or StockLedger row.
+//  ✓ Products use soft-deletes: set is_active = false
+//  ✓ StockLedger is APPEND-ONLY: current stock = SUM(change_qty)
+//
+// ── WORKFLOW ──────────────────────────────────────────────────────────────────
+//
+//  1. Edit this file (add a model, add a field, change a type)
+//  2. Run: npx prisma migrate dev --name what_you_changed
+//     This creates a new file in prisma/migrations/ and applies it to your
+//     development database.
+//  3. Run: npx prisma generate
+//     This regenerates the Prisma Client (TypeScript types + query methods).
+//  4. Commit BOTH schema.prisma AND the new migration file.
+//
+// ── SUPABASE AUTH NOTE ────────────────────────────────────────────────────────
+//
+//  Supabase's auth.users table lives in the 'auth' schema, which Prisma does
+//  not manage. Fields like 'performed_by', 'created_by', and 'assignee' that
+//  reference auth.users are stored as plain UUID strings — Prisma cannot
+//  enforce FK constraints across schemas.
+//
+//  The link between auth.users and public.profiles is maintained by a
+//  Supabase database trigger defined in supabase/rls-policies.sql.
+//
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+
+  // DATABASE_URL  → Transaction Pooler (PgBouncer) URL — used at runtime.
+  // Append: ?pgbouncer=true&connection_limit=1 to the URL in .env.local.
+  url       = env("DATABASE_URL")
+
+  // DIRECT_URL    → Direct connection URL — used ONLY by migrations.
+  // Required because PgBouncer does not support DDL statements.
+  directUrl = env("DIRECT_URL")
+}
+
+// =============================================================================
+// Profile
+//
+// Extends Supabase's auth.users with application-level fields.
+// One Profile per auth user — created automatically by the DB trigger.
+//
+// ROLES:
+//   owner    Full access to all features, reports, user management
+//   manager  Inventory CRUD, reports, task board; cannot manage users
+//   staff    Can receive stock and make adjustments; no reports or admin
+//
+// SENSITIVE DATA POLICY:
+//   SSN, bank account, W-4 details, I-9 document numbers must NOT be stored
+//   here. Use Gusto/ADP integration. Store only payrollExternalId reference.
+// =============================================================================
+
+model Profile {
+  id         String  @id @db.Uuid
+  role       String  @default("staff")
+  lastName   String? @map("last_name")
+  firstName  String? @map("first_name")
+  middleName String? @map("middle_name")
+  storeId    String? @db.Uuid @map("store_id")
+  isActive  Boolean  @default(true) @map("is_active")
+
+  // Employment dates
+  hireDate  DateTime? @db.Date @map("hire_date")
+  exitDate  DateTime? @db.Date @map("exit_date")
+
+  // HR fields
+  position              String?    // Job title: "Cashier", "Stock Clerk", "Asst. Manager"
+  payType               String     @default("hourly") @map("pay_type")  // "hourly" | "salary"
+  employeeNumber        String?    @unique @map("employee_number")
+  phone                 String?
+  email                 String?
+  address               String?
+  notes                 String?
+
+  // Emergency contact
+  emergencyContactName  String?    @map("emergency_contact_name")
+  emergencyContactPhone String?    @map("emergency_contact_phone")
+  emergencyContactRelation String? @map("emergency_contact_relation")
+
+  // Texas compliance
+  foodHandlerCertExpiry DateTime?  @db.Date @map("food_handler_cert_expiry")
+
+  // I-9 compliance — store metadata only, NOT document details (use Gusto/ADP)
+  i9Verified            Boolean    @default(false) @map("i9_verified")
+  i9VerificationDate    DateTime?  @db.Date @map("i9_verification_date")
+
+  // Separation tracking
+  exitReason            String?    @map("exit_reason")      // "resigned" | "terminated" | "laid_off" | "retired"
+  rehireEligible        Boolean    @default(true) @map("rehire_eligible")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt      @map("updated_at") @db.Timestamptz
+
+  secondaryStoreIds String[] @default([]) @map("secondary_store_ids")
+  allowedModules    String[] @default([]) @map("allowed_modules")
+
+  store            Store?            @relation(fields: [storeId], references: [id])
+  employmentEvents EmploymentEvent[]
+  wageHistory      WageHistory[]
+
+  @@map("profiles")
+}
+
+// =============================================================================
+// Store
+//
+// One row per physical retail location. Products and staff profiles are
+// optionally linked to a store so managers can filter by location.
+// =============================================================================
+
+model Store {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  address   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  products        Product[]
+  profiles        Profile[]
+  stockLedger     StockLedger[]
+  purchaseOrders  PurchaseOrder[]
+  scheduleShifts  Schedule[]
+  inventoryCounts InventoryCount[]
+  timeEntries     TimeEntry[]
+  storeConfigs    ProductStoreConfig[]
+
+  @@map("stores")
+}
+
+// =============================================================================
+// Category
+// =============================================================================
+
+model Category {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @unique
+  nameEs    String    @map("name_es")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  products  Product[]
+
+  @@map("categories")
+}
+
+// =============================================================================
+// Supplier
+//
+// Vendor/distributor contact information.
+// =============================================================================
+
+model Supplier {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String  @unique
+  contactName     String? @map("contact_name")
+  phone           String?
+  email           String?
+  website         String?
+  address         String?
+
+  // Payment & ordering
+  paymentTerms    String? @map("payment_terms")  // "NET30" | "NET15" | "COD" | "CIA"
+  leadTimeDays    Int?    @map("lead_time_days")  // avg days from order to delivery
+  minOrderAmount  Decimal? @db.Decimal(10,2) @map("min_order_amount")
+  currency        String  @default("USD")
+
+  // Tax / compliance
+  taxId           String? @map("tax_id")  // EIN for 1099-MISC if paid $600+/yr
+
+  // Operational fields
+  accountNumber        String?  @map("account_number")       // buyer's account # with this supplier
+  paymentMethod        String?  @map("payment_method")       // "check" | "ach" | "credit_card" | "cod"
+  deliveryDays         String?  @map("delivery_days")        // e.g. "Mon, Wed, Fri"
+  orderingEmail        String?  @map("ordering_email")       // separate from general contact email
+  returnPolicy         String?  @map("return_policy")
+  deliveryFeeThreshold Decimal? @db.Decimal(10,2) @map("delivery_fee_threshold")
+  catalogUrl           String?  @map("catalog_url")
+
+  // Status
+  isActive        Boolean  @default(true)  @map("is_active")
+  isApproved      Boolean  @default(true)  @map("is_approved")
+  deactivatedAt   DateTime? @db.Timestamptz @map("deactivated_at")
+  deactivatedBy   String?   @db.Uuid @map("deactivated_by")
+  deactivationReason String? @map("deactivation_reason")
+
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+  contacts       SupplierContact[]
+
+  @@map("suppliers")
+}
+
+// =============================================================================
+// Product
+//
+// SOFT DELETES: Never hard-delete. Set is_active = false.
+// STOCK: Not stored here. Calculated as SUM(change_qty) FROM stock_ledger
+//        WHERE product_id = id AND store_id = <store>.
+//
+// TAX CATEGORIES (Texas):
+//   exempt    Most grocery food items — not subject to 8.25% sales tax
+//   standard  Beverages, candy, dietary supplements — taxable
+//   prepared  Prepared/hot food — taxable
+// =============================================================================
+
+model Product {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku            String    @unique
+  name           String
+  nameEs         String?   @map("name_es")
+  categoryId     String    @db.Uuid @map("category_id")
+  supplierId     String?   @db.Uuid @map("supplier_id")
+
+  // Barcode — required for POS integration (Phase 10)
+  barcode        String?   @unique
+  barcodeType    String?   @map("barcode_type")  // "UPC-A" | "EAN-13" | "CODE-128"
+
+  // Unit of measure
+  unit           String    @default("each")
+
+  // Pricing
+  costPrice      Decimal?  @db.Decimal(10, 2) @map("cost_price")
+  sellPrice      Decimal?  @db.Decimal(10, 2) @map("sell_price")
+
+  // Tax category (Texas rules)
+  taxCategory    String    @default("exempt") @map("tax_category")
+
+  // Stock thresholds — global defaults; per-store overrides in ProductStoreConfig
+  reorderPoint   Int       @default(0) @map("reorder_point")
+  reorderQty     Int       @default(0) @map("reorder_qty")
+
+  // Ordering
+  vendorSku      String?   @map("vendor_sku")   // Supplier's own item number
+  minOrderQty    Decimal?  @db.Decimal(10,3) @map("min_order_qty")
+  casePackQty    Decimal?  @db.Decimal(10,3) @map("case_pack_qty")
+
+  // Product details
+  brand          String?
+  countryOfOrigin String?  @map("country_of_origin")  // FDA COOL labeling
+  weightGrams    Decimal?  @db.Decimal(8,2) @map("weight_grams")
+  isPerishable   Boolean   @default(false) @map("is_perishable")
+  productNotes   String?   @map("product_notes")
+
+  imageUrl       String?   @map("image_url")
+
+  // Store assignment — null = available at all stores
+  storeId        String?   @db.Uuid @map("store_id")
+
+  // Soft delete
+  isActive       Boolean   @default(true) @map("is_active")
+
+  // Expiration tracking
+  expirationDate DateTime? @db.Date @map("expiration_date")
+  shelfLifeDays  Int?      @map("shelf_life_days")
+
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+
+  category      Category            @relation(fields: [categoryId],  references: [id])
+  supplier      Supplier?           @relation(fields: [supplierId],  references: [id])
+  store         Store?              @relation(fields: [storeId],     references: [id])
+  ledgerEntries StockLedger[]
+  orderItems    PurchaseOrderItem[]
+  storeConfigs  ProductStoreConfig[]
+  countItems    InventoryCountItem[]
+
+  @@map("products")
+}
+
+// =============================================================================
+// ProductStoreConfig
+//
+// Per-store overrides for reorder thresholds and carrying status.
+// Falls back to Product.reorderPoint/reorderQty when no config row exists.
+// =============================================================================
+
+model ProductStoreConfig {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId    String   @db.Uuid @map("product_id")
+  storeId      String   @db.Uuid @map("store_id")
+  reorderPoint Int      @default(0) @map("reorder_point")
+  reorderQty   Int      @default(0) @map("reorder_qty")
+  isCarried    Boolean  @default(true) @map("is_carried")  // false = not stocked at this location
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt      @map("updated_at") @db.Timestamptz
+
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId],   references: [id])
+
+  @@unique([productId, storeId])
+  @@map("product_store_config")
+}
+
+// =============================================================================
+// StockLedger — APPEND-ONLY
+//
+// The core of the inventory system. Every stock change is one new row.
+// Current stock for a product at a store = SUM(change_qty)
+//   WHERE product_id = X AND store_id = Y
+//
+// RULES:
+//   ✗ NEVER update or delete rows
+//   ✓ Positive change_qty = stock IN  (received, return)
+//   ✓ Negative change_qty = stock OUT (sold, spoilage, theft, adjustment)
+//   ✓ performed_by MUST be injected server-side from the auth session
+//   ✓ storeId MUST be set — which store the movement happened at
+//
+// REASONS:
+//   received | sold | adjustment | spoilage | theft | return |
+//   count_correction | transfer_in | transfer_out
+// =============================================================================
+
+model StockLedger {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId       String   @db.Uuid @map("product_id")
+  storeId         String?  @db.Uuid @map("store_id")   // nullable for migration safety; required for new entries
+  changeQty       Decimal  @db.Decimal(10, 3) @map("change_qty")
+  reason          String
+  note            String?
+  performedBy     String   @db.Uuid @map("performed_by")
+  externalId      String?  @unique @map("external_id")
+  purchaseOrderId String?  @db.Uuid @map("purchase_order_id")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  product       Product        @relation(fields: [productId],       references: [id])
+  store         Store?         @relation(fields: [storeId],         references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([productId, storeId])
+  @@index([storeId, createdAt])
+  @@map("stock_ledger")
+}
+
+// =============================================================================
+// PurchaseOrder
+//
+// STATUSES:
+//   draft | sent | shipped | received | cancelled
+//
+// When status = 'received', StockLedger entries are created for each item
+// (reason = 'received', storeId = PurchaseOrder.storeId).
+// =============================================================================
+
+model PurchaseOrder {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId   String    @db.Uuid @map("supplier_id")
+  storeId      String?   @db.Uuid @map("store_id")   // receiving location
+  status       String    @default("draft")
+  poNumber     String?   @unique @map("po_number")
+  createdBy    String    @db.Uuid @map("created_by")
+  notes        String?
+
+  // Invoice tracking
+  invoiceNumber String?  @map("invoice_number")
+  invoiceDate   DateTime? @db.Date @map("invoice_date")
+
+  // Audit trail
+  sentAt       DateTime? @db.Timestamptz @map("sent_at")
+  sentBy       String?   @db.Uuid @map("sent_by")
+  receivedBy   String?   @db.Uuid @map("received_by")
+  cancelledAt  DateTime? @db.Timestamptz @map("cancelled_at")
+  cancelledBy  String?   @db.Uuid @map("cancelled_by")
+  cancelReason String?   @map("cancel_reason")
+  editedAt     DateTime? @db.Timestamptz @map("edited_at")
+  editedBy     String?   @db.Uuid @map("edited_by")
+
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+  receivedAt   DateTime? @db.Timestamptz @map("received_at")
+  shippedAt    DateTime? @db.Timestamptz @map("shipped_at")
+  trackingRef  String?   @map("tracking_ref")
+  expectedAt   DateTime? @db.Date        @map("expected_at")
+
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  store        Store?              @relation(fields: [storeId],    references: [id])
+  items        PurchaseOrderItem[]
+  stockEntries StockLedger[]
+
+  @@map("purchase_orders")
+}
+
+// =============================================================================
+// PurchaseOrderItem
+// =============================================================================
+
+model PurchaseOrderItem {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String   @db.Uuid @map("purchase_order_id")
+  productId       String   @db.Uuid @map("product_id")
+  qtyOrdered      Decimal  @db.Decimal(10, 3) @map("qty_ordered")
+  qtyShipped      Decimal? @db.Decimal(10, 3) @map("qty_shipped")
+  qtyReceived     Decimal? @db.Decimal(10, 3) @map("qty_received")
+  unitCost        Decimal? @db.Decimal(10, 2) @map("unit_cost")
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  product       Product       @relation(fields: [productId],       references: [id])
+
+  @@map("purchase_order_items")
+}
+
+// =============================================================================
+// InventoryCount (Stocktake)
+//
+// Periodic physical counts. Comparing system qty vs. counted qty reveals shrink.
+// Target: full store monthly, high-velocity items weekly.
+//
+// STATUSES: draft | in_progress | completed | cancelled
+//
+// Workflow:
+//   1. Manager creates a count (draft) — system snapshots current stock as systemQty
+//   2. Staff enter countedQty for each item (in_progress)
+//   3. Manager reviews variances and reconciles (completed)
+//   4. For each reconciled item, a count_correction StockLedger entry is created
+// =============================================================================
+
+model InventoryCount {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storeId     String    @db.Uuid @map("store_id")
+  status      String    @default("draft")  // draft | in_progress | completed | cancelled
+  notes       String?
+  countedBy   String    @db.Uuid @map("counted_by")    // user who created the count
+  completedBy String?   @db.Uuid @map("completed_by")
+  completedAt DateTime? @db.Timestamptz @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+
+  items InventoryCountItem[]
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([storeId, status])
+  @@map("inventory_counts")
+}
+
+model InventoryCountItem {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inventoryCountId String   @db.Uuid @map("inventory_count_id")
+  productId        String   @db.Uuid @map("product_id")
+  systemQty        Decimal  @db.Decimal(10,3) @map("system_qty")    // ledger total at count start
+  countedQty       Decimal? @db.Decimal(10,3) @map("counted_qty")   // physical count entered by staff
+  varianceQty      Decimal? @db.Decimal(10,3) @map("variance_qty")  // countedQty - systemQty
+  varianceValue    Decimal? @db.Decimal(10,2) @map("variance_value")// varianceQty × costPrice
+  isReconciled     Boolean  @default(false) @map("is_reconciled")
+  ledgerEntryId    String?  @db.Uuid @map("ledger_entry_id")        // created StockLedger row
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  inventoryCount InventoryCount @relation(fields: [inventoryCountId], references: [id])
+  product        Product        @relation(fields: [productId],        references: [id])
+
+  @@unique([inventoryCountId, productId])
+  @@map("inventory_count_items")
+}
+
+// =============================================================================
+// TimeEntry
+//
+// Separates planned schedule from actual hours worked.
+// Texas Payday Law (TX Labor Code §61) requires accurate time records.
+//
+// SOURCES: manual | clock_in_app | import
+//
+// hoursWorked is computed on clock-out: (clockOutAt - clockInAt) - breakMinutes.
+// Stored for quick payroll queries without repeated calculation.
+// =============================================================================
+
+model TimeEntry {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId    String    @db.Uuid @map("profile_id")
+  storeId      String    @db.Uuid @map("store_id")
+  scheduleId   String?   @db.Uuid @map("schedule_id")   // optional link to planned shift
+  clockInAt    DateTime  @db.Timestamptz @map("clock_in_at")
+  clockOutAt   DateTime? @db.Timestamptz @map("clock_out_at")
+  breakMinutes Int       @default(0) @map("break_minutes")
+  hoursWorked  Decimal?  @db.Decimal(6,2) @map("hours_worked")
+  source       String    @default("manual")
+  approvedBy   String?   @db.Uuid @map("approved_by")
+  notes        String?
+  createdBy    String    @db.Uuid @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@index([profileId, clockInAt])
+  @@index([storeId, clockInAt])
+  @@map("time_entries")
+}
+
+// =============================================================================
+// EmployeeDocument
+//
+// Tracks certifications, verifications, and compliance documents per employee.
+// Store metadata only — never store SSN, bank details, or actual I-9 documents.
+//
+// DOC TYPES:
+//   food_handler_card | food_manager_cert | i9_verification | w4 |
+//   offer_letter | performance_review | other
+// =============================================================================
+
+model EmployeeDocument {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId   String    @db.Uuid @map("profile_id")
+  docType     String    @map("doc_type")
+  title       String
+  expiryDate  DateTime? @db.Date @map("expiry_date")
+  storageUrl  String?   @map("storage_url")  // Supabase Storage path
+  isVerified  Boolean   @default(false) @map("is_verified")
+  verifiedBy  String?   @db.Uuid @map("verified_by")
+  notes       String?
+  uploadedBy  String    @db.Uuid @map("uploaded_by")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([profileId, docType])
+  @@index([expiryDate])
+  @@map("employee_documents")
+}
+
+// =============================================================================
+// Notification
+//
+// Persistent in-app notification store. Prevents alerts from being missed
+// if the user is offline when the event fires.
+//
+// TYPES:
+//   low_stock | near_expiry | po_overdue | food_handler_expiry | shift_reminder
+//   count_variance | i9_expiring | general
+// =============================================================================
+
+model Notification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId  String    @db.Uuid @map("profile_id")  // recipient
+  type       String
+  title      String
+  body       String
+  entityType String?   @map("entity_type")  // 'product' | 'profile' | 'purchase_order'
+  entityId   String?   @map("entity_id")
+  link       String?   // optional deep-link URL, e.g. "/dashboard/inventory"
+  isRead     Boolean   @default(false) @map("is_read")
+  readAt     DateTime? @db.Timestamptz @map("read_at")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([profileId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// =============================================================================
+// ProjectTask — Phase 4b: Task Tracking Dashboard
+// =============================================================================
+
+model ProjectTask {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  status      String    @default("backlog")   // backlog | in_progress | review | done
+  priority    String    @default("medium")    // low | medium | high
+  assignee    String?
+  dueDate     DateTime? @db.Date @map("due_date")
+  createdBy   String    @db.Uuid @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt      @map("updated_at") @db.Timestamptz
+
+  comments TaskComment[]
+
+  @@map("project_tasks")
+}
+
+// =============================================================================
+// TaskComment — APPEND-ONLY
+// =============================================================================
+
+model TaskComment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId      String   @db.Uuid @map("task_id")
+  comment     String
+  performedBy String   @db.Uuid @map("performed_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  task ProjectTask @relation(fields: [taskId], references: [id])
+
+  @@map("task_comments")
+}
+
+// =============================================================================
+// TestResult — Phase 7: Test Log
+// =============================================================================
+
+model TestResult {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId        String   @db.Uuid @map("run_id")
+  testName     String   @map("test_name")
+  category     String
+  status       String
+  durationMs   Int?     @map("duration_ms")
+  errorMessage String?  @map("error_message")
+  performedBy  String   @db.Uuid @map("performed_by")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("test_results")
+}
+
+// =============================================================================
+// Schedule
+//
+// weekStart    The Monday of the week (DATE).
+// dayOfWeek    0 = Monday … 6 = Sunday.
+// startTime    "HH:MM" 24-hour format, Central Time.
+// storeId      Which location the shift is at (required for multi-store).
+// isConfirmed  false = draft schedule, not yet published to staff.
+// isCancelled  Soft-cancel without deleting the record.
+// =============================================================================
+
+model Schedule {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId   String   @db.Uuid @map("profile_id")
+  storeId     String?  @db.Uuid @map("store_id")
+  weekStart   DateTime @db.Date @map("week_start")
+  dayOfWeek   Int      @map("day_of_week")
+  shiftType   String   @default("work") @map("shift_type")  // work | day_off | vacation | sick | holiday
+  startTime   String   @map("start_time")
+  endTime     String   @map("end_time")
+  position    String?
+  note        String?
+  isConfirmed Boolean  @default(false) @map("is_confirmed")
+  isCancelled Boolean  @default(false) @map("is_cancelled")
+  cancelReason String? @map("cancel_reason")
+  createdBy   String   @db.Uuid @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt      @map("updated_at") @db.Timestamptz
+
+  store Store? @relation(fields: [storeId], references: [id])
+
+  @@index([weekStart])
+  @@index([profileId])
+  @@index([weekStart, profileId])
+  @@index([storeId, weekStart])
+  @@map("schedule")
+}
+
+// =============================================================================
+// PayrollPeriod
+//
+// status: open | closed
+// =============================================================================
+
+model PayrollPeriod {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  periodStart DateTime @db.Date @map("period_start")
+  periodEnd   DateTime @db.Date @map("period_end")
+  frequency   String   @default("weekly")  // "weekly" | "biweekly"
+  status      String   @default("open")    // "open" | "closed"
+  createdBy   String   @db.Uuid @map("created_by")
+  closedBy    String?  @db.Uuid @map("closed_by")
+  closedAt    DateTime? @db.Timestamptz @map("closed_at")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt      @map("updated_at") @db.Timestamptz
+
+  entries PayrollEntry[]
+
+  @@index([periodStart])
+  @@map("payroll_periods")
+}
+
+// =============================================================================
+// TimeOffRequest
+//
+// Submitted by any employee (self-service). Reviewed by manager/owner.
+//
+// STATUS FLOW: pending → approved | denied
+//
+// NOTE: Delete is allowed for pending requests (staff can cancel their own).
+//       Approved / denied records are retained for HR audit purposes.
+// =============================================================================
+
+model TimeOffRequest {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId  String    @db.Uuid @map("profile_id")
+  type       String    // vacation | sick | personal | holiday
+  dateStart  DateTime  @db.Date @map("date_start")
+  dateEnd    DateTime  @db.Date @map("date_end")
+  totalDays  Int       @map("total_days")
+  status     String    @default("pending")  // pending | approved | denied
+  note       String?
+  approvedBy String?   @db.Uuid @map("approved_by")
+  approvedAt DateTime? @db.Timestamptz @map("approved_at")
+  createdBy  String    @db.Uuid @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([profileId])
+  @@index([status])
+  @@map("time_off_requests")
+}
+
+// =============================================================================
+// SupplierContact
+//
+// Multiple contacts per supplier (sales rep, AP, driver, etc.)
+// Migrated from single contactName field — "primary" contact preserves old data.
+// =============================================================================
+
+model SupplierContact {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId  String   @db.Uuid @map("supplier_id")
+  contactType String   @default("primary") @map("contact_type")  // "primary" | "ordering" | "delivery" | "accounting" | "emergency"
+  name        String
+  phone       String?
+  email       String?
+  notes       String?
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_contacts")
+}
+
+// =============================================================================
+// EmploymentEvent — APPEND-ONLY
+//
+// Every significant employment change is one new row.
+// Never update or delete. Use to build an employment timeline per employee.
+//
+// EVENT TYPES:
+//   hire | role_change | store_transfer | rate_change |
+//   leave_start | leave_end | status_change | exit | rehire
+// =============================================================================
+
+model EmploymentEvent {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId     String   @db.Uuid @map("profile_id")
+  eventType     String   @map("event_type")
+  fromValue     String?  @map("from_value")   // previous value (e.g. old role, old store name)
+  toValue       String?  @map("to_value")     // new value
+  effectiveDate DateTime @db.Date @map("effective_date")
+  note          String?
+  performedBy   String   @db.Uuid @map("performed_by")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@index([profileId, effectiveDate])
+  @@map("employment_events")
+}
+
+// =============================================================================
+// WageHistory — APPEND-ONLY
+//
+// Every hourly rate change creates a new row.
+// Current rate = most recent row by effectiveDate.
+// =============================================================================
+
+model WageHistory {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId     String   @db.Uuid @map("profile_id")
+  hourlyRate    Decimal  @db.Decimal(8,2) @map("hourly_rate")
+  effectiveDate DateTime @db.Date @map("effective_date")
+  reason        String?  // "hire" | "raise" | "promotion" | "correction"
+  setBy         String   @db.Uuid @map("set_by")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@index([profileId, effectiveDate])
+  @@map("wage_history")
+}
+
+// =============================================================================
+// PayrollEntry
+//
+// One row per employee per pay period.
+//
+// regularHours  = min(effectiveHours, 40)
+// overtimeHours = max(effectiveHours - 40, 0)
+// grossPay      = (regularHours × hourlyRate) + (overtimeHours × hourlyRate × 1.5)
+//
+// Texas FLSA: overtime threshold is 40 hours per workweek.
+// Texas minimum wage: $7.25/hr — enforced in Server Action validation.
+//
+// Values are STORED at period close to lock in the calculation used.
+// payrollExternalId links to Gusto/ADP for reconciliation without storing
+// sensitive payroll data (SSN, bank details, withholdings) in this system.
+// =============================================================================
+
+model PayrollEntry {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payrollPeriodId   String   @db.Uuid @map("payroll_period_id")
+  profileId         String   @db.Uuid @map("profile_id")
+  actualHours       Decimal? @db.Decimal(6, 2) @map("actual_hours")
+  hourlyRate        Decimal? @db.Decimal(8, 2) @map("hourly_rate")
+  regularHours      Decimal? @db.Decimal(6, 2) @map("regular_hours")
+  overtimeHours     Decimal? @db.Decimal(6, 2) @map("overtime_hours")
+  grossPay          Decimal? @db.Decimal(10, 2) @map("gross_pay")
+  payrollExternalId String?  @map("payroll_external_id")  // Gusto/ADP reference
+  note              String?
+  createdBy         String   @db.Uuid @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime @updatedAt      @map("updated_at") @db.Timestamptz
+
+  payrollPeriod PayrollPeriod @relation(fields: [payrollPeriodId], references: [id])
+
+  @@unique([payrollPeriodId, profileId])
+  @@index([payrollPeriodId])
+  @@index([profileId])
+  @@map("payroll_entries")
+}

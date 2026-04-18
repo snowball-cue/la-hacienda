@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .gitignore — La Hacienda
+# ─────────────────────────────────────────────────────────────────────────────
+# Files and directories that Git should NOT track.
+# CRITICAL: Never commit secrets or generated files that can be rebuilt.
+# Note: inline comments on pattern lines (e.g. "node_modules/ # note")
+# break git-ignore matching — always put comments on their own line.
+
+# ── Node / npm ───────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Next.js build output ─────────────────────────────────────────────────────
+.next/
+out/
+
+# ── SECRETS — NEVER COMMIT THESE ─────────────────────────────────────────────
+# These files contain database passwords, API keys, and service role secrets.
+# Committing them would expose La Hacienda's data to anyone with repo access.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# .env.example is SAFE to commit — it contains only placeholder values.
+
+# ── Prisma ───────────────────────────────────────────────────────────────────
+# The Prisma client is generated from schema.prisma during `npm install`.
+# We DO commit: prisma/schema.prisma and prisma/migrations/
+# Generated client files live inside node_modules/.prisma (already ignored).
+
+# ── TypeScript ───────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Operating System ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Editors & IDEs ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Vercel deployment ────────────────────────────────────────────────────────
+.vercel
+
+# ── Mobile app (Expo / React Native) ─────────────────────────────────────────
+mobile-app/node_modules/
+mobile-app/.expo/
+mobile-app/dist/
+mobile-app/ios/build/
+mobile-app/android/build/
+mobile-app/android/app/build/
