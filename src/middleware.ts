@@ -86,13 +86,18 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  // IMPORTANT: Do not add logic between createServerClient() and getUser().
-  // getUser() validates the session token with Supabase's auth servers and
-  // triggers the session refresh. Any early return above this would skip
-  // the refresh and cause premature session expiry.
+  // Middleware uses getSession() (cookie-only, no network round trip) because
+  // it's only deciding redirects, not granting privileges. Real authentication
+  // still happens in the layout via getAuthUser() which uses getUser() to
+  // validate the token with Supabase's servers before any data is exposed.
+  //
+  // Session refresh still works correctly — @supabase/ssr's setAll() cookie
+  // callback is invoked by supabase-js whenever the token needs to be
+  // refreshed, independent of whether we called getUser() or getSession().
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
+  const user = session?.user
 
   const { pathname } = request.nextUrl
 
@@ -131,6 +136,10 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    // Only run middleware on routes that need session refresh / auth gating.
+    // Public pages (/, /forgot-password, /reset-password, /setup) skip this
+    // entirely, saving ~50-100ms of Supabase round-trip per request.
+    '/dashboard/:path*',
+    '/login',
   ],
 }

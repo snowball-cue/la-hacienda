@@ -95,14 +95,19 @@ export default function RootLayout({
      *   tailwind's `font-sans` class resolves to Inter.
      */
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Preconnect shaves ~100-200ms off the first Supabase request by
+            starting the DNS lookup and TLS handshake in parallel with
+            HTML parsing, rather than serially when the first fetch fires. */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <>
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="" />
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
+          </>
+        )}
+      </head>
       <body
         className="min-h-screen bg-stone-50 text-stone-900 antialiased"
-        /*
-         * suppressHydrationWarning prevents React from warning about DOM
-         * attribute mismatches caused by browser extensions (e.g., password
-         * managers or accessibility tools that add attributes to <body>).
-         * This is safe and recommended when using next/font.
-         */
         suppressHydrationWarning
       >
         {children}

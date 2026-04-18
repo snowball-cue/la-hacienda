@@ -284,7 +284,14 @@ export async function getInventoryStats(): Promise<{
         where:  { isActive: true },
         select: { id: true, reorderPoint: true },
       }),
-      prisma.stockLedger.groupBy({ by: ['productId'], _sum: { changeQty: true } }),
+      // Filter to active products only — without this, the groupBy scans
+      // every row in stock_ledger, including entries for archived products.
+      // Prisma emits a JOIN on products which uses the isActive index.
+      prisma.stockLedger.groupBy({
+        by: ['productId'],
+        _sum: { changeQty: true },
+        where: { product: { isActive: true } },
+      }),
       prisma.product.count({
         where: {
           isActive:       true,
